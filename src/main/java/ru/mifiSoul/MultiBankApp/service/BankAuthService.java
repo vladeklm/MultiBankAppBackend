@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.mifiSoul.MultiBankApp.database.repository.BankRepository;
 import ru.mifiSoul.MultiBankApp.dto.AccessInfo;
+import ru.mifiSoul.MultiBankApp.dto.BankForToken;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,8 +24,6 @@ public class BankAuthService {
     private String clientSecret;
 
     private RestTemplate restTemplate;
-    private volatile String currentAccessToken;
-    private volatile Long nextRefreshTimeMillis;
     private BankRepository bankRepository;
 
     private ConcurrentHashMap<String, AccessInfo> tokenStorage;
@@ -43,32 +42,38 @@ public class BankAuthService {
         }
     }
 
-    public void initializeAllBanks() {
-        var banks = bankRepository.findAll().stream().map(bank -> bank.getUrl()).toList();
-        for (String bankUrl : banks) {
-            updateTokenForBank(bankUrl);
+    public void initializeAllBanksTokens() {
+        var banks = bankRepository.findAll().stream().map(
+                bank -> {
+                    var bankForToken = new BankForToken();
+                    bankForToken.setUrl(bank.getUrl());
+                    bankForToken.setBankName(bank.getName());
+                    return bankForToken;
+                }).toList();
+        for (var bank : banks) {
+            updateTokenForBank(bank);
         }
     }
 
-    public void updateTokenForBank(String bankUrl) {
+    public void updateTokenForBank(BankForToken bank) {
         try {
-            var response = sendPostRequest(bankUrl);
+            var response = sendPostRequest(bank.getUrl());
             if (response.getStatusCode().is2xxSuccessful()) {
-                handleResponseAndScheduleNextUpdate(bankUrl, response.getBody());
+                handleResponseAndScheduleNextUpdate(bank.getBankName(), response.getBody());
             }
         } catch (Exception ex) {
             var x = 1;
         }
     }
 
-    private void handleResponseAndScheduleNextUpdate(String bankUrl, Map<String, ?> responseBody) {
+    private void handleResponseAndScheduleNextUpdate(String bankName, Map<String, ?> responseBody) {
         String accessToken = (String) responseBody.get("access_token");
         Integer expiresInSeconds = (Integer) responseBody.get("expires_in");
 
-        if (tokenStorage.containsKey(bankUrl)) {
-            tokenStorage.replace(bankUrl, new AccessInfo(accessToken, expiresInSeconds));
+        if (tokenStorage.containsKey(bankName)) {
+            tokenStorage.replace(bankName, new AccessInfo(accessToken, expiresInSeconds));
         } else {
-            tokenStorage.put(bankUrl, new AccessInfo(accessToken, expiresInSeconds));
+            tokenStorage.put(bankName, new AccessInfo(accessToken, expiresInSeconds));
         }
 
     }

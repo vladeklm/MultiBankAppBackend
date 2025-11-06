@@ -1,5 +1,6 @@
 package ru.mifiSoul.MultiBankApp.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,7 +14,9 @@ import ru.mifiSoul.MultiBankApp.database.entity.Consent;
 import ru.mifiSoul.MultiBankApp.database.repository.BankRepository;
 import ru.mifiSoul.MultiBankApp.database.repository.ConsentRepository;
 import ru.mifiSoul.MultiBankApp.database.repository.UserRepository;
+import ru.mifiSoul.MultiBankApp.dto.ConsentCreateRequest;
 import ru.mifiSoul.MultiBankApp.dto.ConsentRequest;
+import ru.mifiSoul.MultiBankApp.service.util.UrlWrapper;
 
 import java.util.List;
 import java.util.Map;
@@ -24,22 +27,25 @@ public class ConsentService {
     private BankRepository bankRepository;
     private UserRepository userRepository;
     private List<String> permissions;
-    private String consentEndPoint = "/account-consents/request";
-    private OurBankService ourBankService;
     private RestTemplate restTemplate = new RestTemplate();
     private ConsentRepository consentRepository;
 
+    @Value("${client_id}")
+    private String clientId;
+
     public ConsentService(BankAuthService bankAuthService,
                           UserRepository userRepository,
-                          OurBankService ourBankService,
-                          ConsentRepository consentRepository) {
+                          ConsentRepository consentRepository,
+                          BankRepository bankRepository) {
         this.userRepository = userRepository;
         this.bankAuthService = bankAuthService;
-        this.ourBankService = ourBankService;
+        this.consentRepository = consentRepository;
+        this.bankRepository = bankRepository;
         this.permissions = List.of("ReadAccountsDetail", "ReadBalances", "ReadTransactionsDetail");
     }
 
-    public String createConsent(String bankName) {
+    public String createConsent(ConsentCreateRequest consentCreateRequest) {
+        var bankName = consentCreateRequest.getBankName();
         var userDetails = (UserDetails) SecurityContextHolder
                                                             .getContext()
                                                             .getAuthentication()
@@ -47,23 +53,24 @@ public class ConsentService {
         var username = userDetails.getUsername();
         var user = userRepository.findByUsername(username).get();
         var bank = bankRepository.findByName(bankName).get();
-        var bearerToken = bankAuthService.getTokenByBankUrl(bank.getUrl());
-        var baseUrl = "https://" + bank.getUrl() + consentEndPoint;
+        var bearerToken = bankAuthService.getTokenByBankUrl(bank.getName());
+        var baseUrl = UrlWrapper.wrap(bank.getUrl());
         String fullUrl = UriComponentsBuilder.fromUriString(baseUrl)
-                .pathSegment("consent-api/v1/consents")
+                .pathSegment("account-consents")
+                .pathSegment("request")
                 .toUriString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON); // тип контента
         headers.set("Authorization", "Bearer " + bearerToken); // токен Bearer
-        headers.add("X-Requesting-Bank", ourBankService.getId()); // специальный заголовок
+        headers.add("X-Requesting-Bank", clientId); // специальный заголовок
 
         ConsentRequest consentRequest = new ConsentRequest();
-        consentRequest.setClientId("username");
+        consentRequest.setClientId(username);
         consentRequest.setPermissions(permissions);
         consentRequest.setReason("");
-        consentRequest.setRequestingBank(ourBankService.getId());
-        consentRequest.setRequestingBankName(ourBankService.getId());
+        consentRequest.setRequestingBank(clientId);
+        consentRequest.setRequestingBankName(clientId);
 
         HttpEntity<ConsentRequest> entity = new HttpEntity<>(consentRequest, headers);
 

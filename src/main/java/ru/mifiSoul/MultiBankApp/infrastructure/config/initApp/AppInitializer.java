@@ -8,6 +8,7 @@ import ru.mifiSoul.MultiBankApp.database.entity.Role;
 import ru.mifiSoul.MultiBankApp.database.entity.RoleEntity;
 import ru.mifiSoul.MultiBankApp.database.repository.BankRepository;
 import ru.mifiSoul.MultiBankApp.database.repository.RoleRepository;
+import ru.mifiSoul.MultiBankApp.service.BankAuthService;
 
 import java.util.Base64;
 
@@ -17,6 +18,7 @@ public class AppInitializer implements CommandLineRunner {
 
     private RoleRepository roleRepository;
     private BankRepository bankRepository;
+    private BankAuthService bankAuthService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -49,7 +51,7 @@ public class AppInitializer implements CommandLineRunner {
         sBank.setPicture(Base64.getDecoder().decode(pictureBase64));
         bankRepository.save(sBank);
 
-
+        bankAuthService.initializeAllBanksTokens();
 
     }
 }
