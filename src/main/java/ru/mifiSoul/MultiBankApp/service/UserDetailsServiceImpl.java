@@ -1,6 +1,7 @@
 package ru.mifiSoul.MultiBankApp.service;
 
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,6 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             user = userRepository.findByUsername(login)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + login));
         }
+        //Hibernate.initialize(user.getRoles());
         return UserDetailsImpl.build(user);
     }
 }

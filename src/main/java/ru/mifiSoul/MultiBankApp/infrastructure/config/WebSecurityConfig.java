@@ -52,7 +52,9 @@ public class WebSecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()              // Разрешение полного доступа к Swagger UI
+                        .requestMatchers("/v3/api-docs/**").permitAll()             // Документы OpenAPI (если используете springdoc)
+                        .requestMatchers("/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -62,7 +64,7 @@ public class WebSecurityConfig {
     }
 
     /*Для работы с H2, не брать в прод*/
-    @Bean
+    /*@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -74,6 +76,6 @@ public class WebSecurityConfig {
                 );
 
         return http.build();
-    }
+    }*/
 
 }
