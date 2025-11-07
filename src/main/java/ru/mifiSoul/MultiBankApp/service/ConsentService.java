@@ -61,9 +61,9 @@ public class ConsentService {
                 .toUriString();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON); // тип контента
-        headers.set("Authorization", "Bearer " + bearerToken); // токен Bearer
-        headers.add("X-Requesting-Bank", clientId); // специальный заголовок
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + bearerToken);
+        headers.add("X-Requesting-Bank", clientId);
 
         ConsentRequest consentRequest = new ConsentRequest();
         consentRequest.setClientId(username);

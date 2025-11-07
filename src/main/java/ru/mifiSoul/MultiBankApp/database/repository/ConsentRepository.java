@@ -6,10 +6,11 @@ import org.springframework.stereotype.Repository;
 import ru.mifiSoul.MultiBankApp.database.entity.Consent;
 import ru.mifiSoul.MultiBankApp.database.entity.UserEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ConsentRepository extends JpaRepository<Consent, Long> {
     Optional<Consent> findByBankIdentifier(String bankIdentifier);
-    Optional<Consent> findAllByUser(UserEntity user);
+    List<Consent> findAllByUser(UserEntity user);
 }
