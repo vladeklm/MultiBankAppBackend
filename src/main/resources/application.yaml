@@ -1,18 +1,21 @@
 spring:
   application:
-    name: auth_service
+    name: multi_bank_app
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth-postgres
-    username: auth-postgres
-    password: auth-postgres
+    url: jdbc:postgresql://localhost:5423/multi_bank
+    username: appuser
+    password: secretpassword
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
 token:
   signing:
     key: lKcSZ0Vl23T7U9F2B7b/Qx9xH8m/zD63vW5Y4t/5Xl0J5v0bK6w74+0q4hI8rG1Fm67k8b9aM7/vY9V+k6T64eQ==
   expiration: 86400000
+
+server:
+   port: 8095
