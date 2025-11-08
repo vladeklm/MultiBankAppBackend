@@ -6,6 +6,7 @@ import chat.giga.model.completion.ChatMessage;
 import chat.giga.model.completion.CompletionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.mifiSoul.MultiBankApp.dto.ChatAskDto;
 
 @Service
 @RequiredArgsConstructor
@@ -13,7 +14,8 @@ public class GigaChatService {
 
     private final GigaChatClient gigaChatClient;
 
-    public String ask(String question) {
+    public String ask(ChatAskDto chatAskDto) {
+        var question = chatAskDto.getQuestion();
         var request = CompletionRequest.builder()
                 .model(ModelName.GIGA_CHAT)
                 .message(ChatMessage.builder()
