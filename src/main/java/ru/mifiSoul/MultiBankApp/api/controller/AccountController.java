@@ -15,10 +15,8 @@ import ru.mifiSoul.MultiBankApp.service.BankService;
 public class AccountController {
     private AccountService accountService;
 
-    @PostMapping("/")
+    @GetMapping("/")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(accountService.getAll());
     }
-
-
 }
