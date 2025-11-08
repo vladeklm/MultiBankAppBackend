@@ -53,6 +53,10 @@ public class ConsentService {
         var username = userDetails.getUsername();
         var user = userRepository.findByUsername(username).get();
         var bank = bankRepository.findByName(bankName).get();
+        var consentFromDb = consentRepository.findByBankAndUser(bank, user);
+        if (consentFromDb.isPresent()) {
+            return consentFromDb.get().getBankIdentifier();
+        }
         var bearerToken = bankAuthService.getTokenByBankUrl(bank.getName());
         var baseUrl = UrlWrapper.wrap(bank.getUrl());
         String fullUrl = UriComponentsBuilder.fromUriString(baseUrl)
